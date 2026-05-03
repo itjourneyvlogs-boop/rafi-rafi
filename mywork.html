@@ -11,7 +11,6 @@
 </head>
 <body>
 
-<!-- Back to Dashboard -->
 <button onclick="goToDashboard()" style="position:absolute; top:20px; right:20px; padding:10px 20px; background:#00bcd4; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">
     <i class="fas fa-home"></i> Dashboard
 </button>
@@ -57,9 +56,12 @@
 </form>
 </div>
 
-<script>
-document.getElementById("workForm").addEventListener("submit", function(e) {
+<script type="module">
+import { db, collection, addDoc } from "./firebase.js";
+
+document.getElementById("workForm").addEventListener("submit", async function(e) {
     e.preventDefault();
+
     const formData = {
         sno: document.getElementById("sno").value,
         date: document.getElementById("date").value,
@@ -69,15 +71,17 @@ document.getElementById("workForm").addEventListener("submit", function(e) {
         floor: document.getElementById("floor").value,
         problem: document.getElementById("problem").value,
         ticket: document.getElementById("ticket").value,
-        status: document.getElementById("status").value
+        status: document.getElementById("status").value,
+        timestamp: new Date().toISOString()
     };
 
-    let works = JSON.parse(localStorage.getItem("works_NSSH")) || [];
-    works.push(formData);
-    localStorage.setItem("works_NSSH", JSON.stringify(works));
-
-    alert("✅ Work Saved Successfully!");
-    this.reset();
+    try {
+        await addDoc(collection(db, "works_NSSH"), formData);
+        alert("✅ Work Saved Successfully!");
+        this.reset();
+    } catch (error) {
+        alert("Error: " + error.message);
+    }
 });
 
 function goToDashboard() {
