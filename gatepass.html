@@ -4,7 +4,7 @@
     <title>Gatepass - NSSH</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-    body { font-family:Arial; background:linear-gradient(135deg,#1e3c72,#2a5298); color:white; padding:20px; }
+    body { font-family:Arial; background:linear-gradient(135deg,#1e3c72,#2a5298); color:white; padding:20px; position:relative; }
     .block-card { background:rgba(255,255,255,0.15); padding:25px; border-radius:15px; text-align:center; margin:20px auto; max-width:500px; }
     .btn { padding:12px; margin:5px; border:none; border-radius:8px; width:48%; cursor:pointer; }
     .enter-btn { background:#4CAF50; color:white; }
@@ -12,6 +12,12 @@
     </style>
 </head>
 <body>
+
+<!-- Back to Dashboard -->
+<button onclick="goToDashboard()" style="position:absolute; top:20px; right:20px; padding:10px 20px; background:#00bcd4; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">
+    <i class="fas fa-home"></i> Dashboard
+</button>
+
 <h2>🆔 Gatepass Management - NSSH</h2>
 
 <div class="block-card">
@@ -22,10 +28,17 @@
 </div>
 
 <script>
-function enterGatepass() { window.location.href = 'gatepass-form.html'; }
+function enterGatepass() { 
+    window.location.href = 'gatepass-form.html'; 
+}
+
 function viewGatepass() { 
     localStorage.setItem("currentBlock", "NSSH"); 
     window.location.href = "gatepass-view.html"; 
+}
+
+function goToDashboard() {
+    window.location.href = "dashboard.html";
 }
 </script>
 </body>
