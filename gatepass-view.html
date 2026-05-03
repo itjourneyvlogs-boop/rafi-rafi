@@ -12,7 +12,6 @@
 </head>
 <body>
 
-<!-- Back to Dashboard -->
 <button onclick="goToDashboard()" style="position:absolute; top:20px; right:20px; padding:10px 20px; background:#00bcd4; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">
     <i class="fas fa-home"></i> Dashboard
 </button>
@@ -33,13 +32,17 @@
     <tbody></tbody>
 </table>
 
-<script>
-function loadGatepasses() {
-    const data = JSON.parse(localStorage.getItem("gatepass_NSSH")) || [];
+<script type="module">
+import { db, collection, getDocs, deleteDoc, doc, onSnapshot } from "./firebase.js";
+
+const gatepassRef = collection(db, "gatepass_NSSH");
+
+let allData = [];
+
+function renderTable() {
     const tbody = document.querySelector("#dataTable tbody");
     tbody.innerHTML = "";
-
-    data.forEach((item, index) => {
+    allData.forEach((item) => {
         tbody.innerHTML += `
             <tr>
                 <td>${item.gatepassNo}</td>
@@ -47,25 +50,29 @@ function loadGatepasses() {
                 <td>${item.purpose}</td>
                 <td>${item.destination}</td>
                 <td>${item.status}</td>
-                <td><button onclick="deleteGate(${index})">Delete</button></td>
+                <td><button onclick="deleteGate('${item.id}')">Delete</button></td>
             </tr>`;
     });
 }
 
-function deleteGate(index) {
-    if(confirm("Delete?")) {
-        let data = JSON.parse(localStorage.getItem("gatepass_NSSH")) || [];
-        data.splice(index,1);
-        localStorage.setItem("gatepass_NSSH", JSON.stringify(data));
-        loadGatepasses();
+// Real-time Listener
+onSnapshot(gatepassRef, (snapshot) => {
+    allData = [];
+    snapshot.forEach((docSnap) => {
+        allData.push({ id: docSnap.id, ...docSnap.data() });
+    });
+    renderTable();
+});
+
+async function deleteGate(id) {
+    if(confirm("Delete this Gatepass?")) {
+        await deleteDoc(doc(db, "gatepass_NSSH", id));
     }
 }
 
 function goToDashboard() {
     window.location.href = "dashboard.html";
 }
-
-window.onload = loadGatepasses;
 </script>
 </body>
 </html>
