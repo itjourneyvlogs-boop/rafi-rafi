@@ -17,7 +17,6 @@
         overflow: hidden;
     }
     
-    /* Background Glow Animation */
     body::before {
         content: "";
         position: absolute;
@@ -25,28 +24,33 @@
         left: -50%;
         width: 200%;
         height: 200%;
-        background: radial-gradient(circle, rgba(0, 229, 255, 0.15) 0%, transparent 70%);
-        animation: glow 15s infinite alternate;
+        background: radial-gradient(circle, rgba(0, 229, 255, 0.18) 0%, transparent 60%);
+        animation: glow 12s infinite alternate;
         z-index: -1;
     }
 
     .login-box {
-        background: rgba(15, 23, 42, 0.85);
+        background: rgba(15, 23, 42, 0.88);
         backdrop-filter: blur(16px);
         padding: 50px 40px;
         border-radius: 25px;
         width: 400px;
         text-align: center;
-        box-shadow: 0 0 40px rgba(0, 229, 255, 0.6),
-                    0 0 80px rgba(138, 43, 226, 0.4);
-        border: 1px solid rgba(0, 229, 255, 0.3);
-        transition: all 0.4s ease;
+        box-shadow: 0 0 45px rgba(0, 229, 255, 0.7),
+                    0 0 90px rgba(138, 43, 226, 0.5);
+        border: 1px solid rgba(0, 229, 255, 0.4);
     }
     
     .login-box:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 0 50px rgba(0, 229, 255, 0.8),
-                    0 0 90px rgba(138, 43, 226, 0.6);
+        box-shadow: 0 0 55px rgba(0, 229, 255, 0.9);
+    }
+
+    .lock-icon {
+        font-size: 65px;
+        color: #00e5ff;
+        margin-bottom: 10px;
+        text-shadow: 0 0 30px #00e5ff;
+        animation: pulse 2s infinite;
     }
 
     h2 { 
@@ -56,11 +60,7 @@
         text-shadow: 0 0 20px #00e5ff;
     }
 
-    .subtitle {
-        color: #a5b4fc;
-        margin-bottom: 30px;
-        font-size: 18px;
-    }
+    .subtitle { color: #a5b4fc; margin-bottom: 30px; font-size: 18px; }
 
     input {
         width: 100%;
@@ -71,53 +71,32 @@
         color: white;
         font-size: 17px;
         margin: 12px 0;
-        transition: all 0.3s;
     }
-    
     input:focus {
-        outline: none;
         border-color: #00e5ff;
-        box-shadow: 0 0 15px rgba(0, 229, 255, 0.6);
-        background: rgba(255,255,255,0.15);
+        box-shadow: 0 0 18px rgba(0, 229, 255, 0.7);
     }
 
     button {
         width: 100%;
         padding: 16px;
-        margin: 20px 0 10px;
+        margin: 25px 0 10px;
         border: none;
         border-radius: 12px;
         font-size: 18px;
         font-weight: bold;
-        cursor: pointer;
         background: linear-gradient(135deg, #00bcd4, #7b00ff);
         color: white;
-        box-shadow: 0 0 25px rgba(0, 188, 212, 0.6);
-        transition: all 0.4s;
+        box-shadow: 0 0 25px rgba(0, 188, 212, 0.7);
+        cursor: pointer;
     }
-    
     button:hover {
-        transform: scale(1.05);
-        box-shadow: 0 0 35px rgba(123, 0, 255, 0.8);
+        transform: scale(1.06);
+        box-shadow: 0 0 40px rgba(123, 0, 255, 0.8);
     }
 
-    .lock-icon {
-        font-size: 60px;
-        color: #00e5ff;
-        margin-bottom: 15px;
-        text-shadow: 0 0 25px #00e5ff;
-        animation: pulse 2s infinite;
-    }
-
-    @keyframes glow {
-        0% { opacity: 0.6; }
-        100% { opacity: 1; }
-    }
-
-    @keyframes pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-    }
+    @keyframes glow { 0% { opacity: 0.7; } 100% { opacity: 1; } }
+    @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.12); } }
     </style>
 </head>
 <body>
@@ -128,15 +107,14 @@
     <p class="subtitle">NSSH IT Work Management System</p>
 
     <input type="text" id="username" placeholder="Username" value="admin">
-    <input type="password" id="password" placeholder="Password" value="admin123">
+    <input type="password" id="password" placeholder="Password">
 
     <button onclick="login()">LOGIN</button>
-    
     <small style="color:#64748b;">Default: admin / admin123</small>
 </div>
 
 <script>
-async function login() {
+function login() {
     const user = document.getElementById("username").value.trim();
     const pass = document.getElementById("password").value.trim();
     
@@ -144,12 +122,11 @@ async function login() {
         localStorage.setItem("loggedIn", "true");
         window.location.href = "dashboard.html";
     } else {
-        alert("Invalid credentials! Try again.");
+        alert("Invalid credentials!");
     }
 }
 
-// Allow Enter key to login
-document.getElementById("password").addEventListener("keypress", function(e) {
+document.getElementById("password").addEventListener("keypress", (e) => {
     if (e.key === "Enter") login();
 });
 </script>
