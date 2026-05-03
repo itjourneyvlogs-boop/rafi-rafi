@@ -1,31 +1,137 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Dashboard - NSSH</title>
+    <title>NSSH Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-    body { margin:0; font-family:Arial; background:linear-gradient(135deg,#1e3c72,#2a5298); color:white; }
-    header { text-align:center; padding:20px; font-size:24px; }
-    .container { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:20px; padding:20px; }
-    .card { background:rgba(255,255,255,0.15); padding:20px; border-radius:15px; text-align:center; cursor:pointer; }
+    body { margin:0; font-family:Arial; background:linear-gradient(135deg,#0f1c3a,#1e3c72,#2a5298); color:white; }
+    header { text-align:center; padding:25px; font-size:30px; font-weight:bold; text-shadow:0 0 15px #00e5ff; }
+    .search-container { text-align:center; margin:20px auto; max-width:700px; }
+    #searchInput { width:90%; padding:16px; font-size:18px; border-radius:50px; border:none; background:rgba(255,255,255,0.95); color:#333; }
+    
+    .chart-box { width:400px; margin:30px auto; background:rgba(255,255,255,0.12); padding:20px; border-radius:20px; backdrop-filter:blur(10px); }
+    
+    .container { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:25px; padding:20px 30px; }
+    .card { background:rgba(255,255,255,0.15); border-radius:20px; padding:25px; text-align:center; cursor:pointer; transition:0.4s; }
+    .card:hover { transform:translateY(-12px) scale(1.08); box-shadow:0 0 30px #00e5ff; }
+    .card i { font-size:55px; margin-bottom:10px; }
+    
+    .search-results { display:none; margin:20px; background:white; color:black; padding:15px; border-radius:12px; }
     </style>
 </head>
 <body>
-<header>🚀 NSSH IT Work Management</header>
+
+<header>🚀 NSSH IT Work Management Dashboard</header>
+
+<div class="search-container">
+    <input type="text" id="searchInput" placeholder="🔍 Global Search (Equipment, Problem, Person, IP, Ticket...)">
+</div>
+
+<div class="chart-box">
+    <canvas id="myChart"></canvas>
+</div>
 
 <div class="container">
-    <div class="card" onclick="location.href='mywork.html'">📝 My Work</div>
-    <div class="card" onclick="location.href='blocks.html'">🏢 Blocks</div>
-    <div class="card" onclick="location.href='indents.html'">📋 Indents</div>
-    <div class="card" onclick="location.href='gatepass.html'">🆔 Gatepass</div>
-    <div class="card" onclick="location.href='system-data.html'">🖥️ System Data</div>
-    <div class="card" onclick="location.href='view.html'">⏳ Pending Works</div>
-    <div class="card" onclick="location.href='my-documents.html'">📂 Documents</div>
+    <div class="card" onclick="openPage('My Work')"><i class="fas fa-briefcase" style="color:#00e5ff"></i><h3>My Work</h3></div>
+    <div class="card" onclick="openPage('Blocks')"><i class="fas fa-building" style="color:#ffcc00"></i><h3>Blocks</h3></div>
+    <div class="card" onclick="openPage('Indents')"><i class="fas fa-file-invoice" style="color:#00ff88"></i><h3>Indents</h3></div>
+    <div class="card" onclick="openPage('Gatepass')"><i class="fas fa-id-badge" style="color:#ff66cc"></i><h3>Gatepass</h3></div>
+    <div class="card" onclick="openPage('System Data')"><i class="fas fa-desktop" style="color:#ffff00"></i><h3>System Data</h3></div>
+    <div class="card" onclick="openPage('Pending Works')"><i class="fas fa-hourglass-half" style="color:#ff9966"></i><h3>Pending</h3></div>
+</div>
+
+<!-- Global Search Results -->
+<div class="search-results" id="searchResults">
+    <h3>🔍 Search Results</h3>
+    <table id="searchTable" style="width:100%; border-collapse:collapse;"></table>
 </div>
 
 <script>
-if(localStorage.getItem("loggedIn") !== "true") window.location.href = "index.html";
+// Auto Updating Pie Chart
+let myChart;
+function updateChart() {
+    const blocks = ["NSSH"];
+    let works = 0, indents = 0, gates = 0, systems = 0;
+
+    works += (JSON.parse(localStorage.getItem("works_NSSH")) || []).length;
+    indents += (JSON.parse(localStorage.getItem("indents_NSSH")) || []).length;
+    gates += (JSON.parse(localStorage.getItem("gatepass_NSSH")) || []).length;
+    systems += (JSON.parse(localStorage.getItem("system_NSSH")) || []).length;
+
+    const ctx = document.getElementById('myChart');
+    if(myChart) myChart.destroy();
+
+    myChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Works', 'Indents', 'Gatepass', 'Systems'],
+            datasets: [{
+                data: [works, indents, gates, systems],
+                backgroundColor: ['#00e5ff', '#00ff88', '#ff66cc', '#ffff00']
+            }]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: 'white' }}}}
+    });
+}
+
+// Global Search
+document.getElementById("searchInput").addEventListener("keyup", function() {
+    const query = this.value.toLowerCase().trim();
+    const resultsDiv = document.getElementById("searchResults");
+    const tbody = document.getElementById("searchTable");
+
+    if(query.length < 2) {
+        resultsDiv.style.display = "none";
+        return;
+    }
+
+    let html = `<tr><th>Type</th><th>Item</th><th>Details</th><th>Status</th></tr>`;
+    let found = false;
+
+    // Search in all storage keys
+    for(let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if(key.includes("NSSH")) {
+            try {
+                const data = JSON.parse(localStorage.getItem(key));
+                if(Array.isArray(data)) {
+                    data.forEach(item => {
+                        const text = JSON.stringify(item).toLowerCase();
+                        if(text.includes(query)) {
+                            found = true;
+                            html += `<tr>
+                                <td>${key.includes("works") ? "Work" : key.includes("indents") ? "Indent" : key.includes("gatepass") ? "Gatepass" : "System"}</td>
+                                <td>${item.problem || item.material || item.personName || item.equipmentName || "N/A"}</td>
+                                <td>${item.details || item.purpose || item.ip || ""}</td>
+                                <td>${item.status || "N/A"}</td>
+                            </tr>`;
+                        }
+                    });
+                }
+            } catch(e){}
+        }
+    }
+
+    tbody.innerHTML = found ? html : `<tr><td colspan="4" style="text-align:center;color:red;">No results found</td></tr>`;
+    resultsDiv.style.display = "block";
+});
+
+function openPage(page) {
+    const urls = {
+        "My Work": "mywork.html",
+        "Blocks": "blocks.html",
+        "Indents": "indents.html",
+        "Gatepass": "gatepass.html",
+        "System Data": "system-data.html",
+        "Pending Works": "view.html"
+    };
+    if(urls[page]) window.location.href = urls[page];
+}
+
+// Auto Update Chart every 3 seconds
+setInterval(updateChart, 3000);
+window.onload = updateChart;
 </script>
 </body>
 </html>
