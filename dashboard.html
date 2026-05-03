@@ -18,12 +18,7 @@
     .card i { font-size:55px; margin-bottom:10px; }
     
     .search-results { display:none; margin:20px; background:white; color:black; padding:15px; border-radius:12px; }
-    
-    .logout-btn {
-        position:absolute; top:25px; right:30px;
-        background:#f44336; color:white; border:none; padding:10px 20px;
-        border-radius:8px; cursor:pointer; font-weight:bold;
-    }
+    .logout-btn { position:absolute; top:25px; right:30px; background:#f44336; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold; }
     </style>
 </head>
 <body>
@@ -35,7 +30,7 @@
 </button>
 
 <div class="search-container">
-    <input type="text" id="searchInput" placeholder="🔍 Global Search (Equipment, Problem, Person, IP, Ticket...)">
+    <input type="text" id="searchInput" placeholder="🔍 Global Search...">
 </div>
 
 <div class="chart-box">
@@ -49,95 +44,48 @@
     <div class="card" onclick="openPage('Gatepass')"><i class="fas fa-id-badge" style="color:#ff66cc"></i><h3>Gatepass</h3></div>
     <div class="card" onclick="openPage('System Data')"><i class="fas fa-desktop" style="color:#ffff00"></i><h3>System Data</h3></div>
     <div class="card" onclick="openPage('Pending Works')"><i class="fas fa-hourglass-half" style="color:#ff9966"></i><h3>Pending</h3></div>
-    
-    <!-- New My Documents Card -->
-    <div class="card" onclick="openPage('My Documents')">
-        <i class="fas fa-folder-open" style="color:#ff9800"></i>
-        <h3>My Documents</h3>
-    </div>
+    <div class="card" onclick="openPage('My Documents')"><i class="fas fa-folder-open" style="color:#ff9800"></i><h3>My Documents</h3></div>
 </div>
 
-<!-- Global Search Results -->
-<div class="search-results" id="searchResults">
-    <h3>🔍 Search Results</h3>
-    <table id="searchTable" style="width:100%; border-collapse:collapse;"></table>
-</div>
+<script type="module">
+import { db, collection, getDocs, onSnapshot } from "./firebase.js";
 
-<script>
-// Auto Updating Pie Chart
 let myChart;
+
+// Real-time Chart Update
 function updateChart() {
-    const blocks = ["NSSH"];
-    let works = 0, indents = 0, gates = 0, systems = 0, docs = 0;
+    const worksRef = collection(db, "works_NSSH");
+    const indentsRef = collection(db, "indents_NSSH");
+    const gatepassRef = collection(db, "gatepass_NSSH");
+    const systemRef = collection(db, "system_NSSH");
 
-    works += (JSON.parse(localStorage.getItem("works_NSSH")) || []).length;
-    indents += (JSON.parse(localStorage.getItem("indents_NSSH")) || []).length;
-    gates += (JSON.parse(localStorage.getItem("gatepass_NSSH")) || []).length;
-    systems += (JSON.parse(localStorage.getItem("system_NSSH")) || []).length;
-    docs += (JSON.parse(localStorage.getItem("nssh_documents")) || []).length;
+    Promise.all([
+        getDocs(worksRef),
+        getDocs(indentsRef),
+        getDocs(gatepassRef),
+        getDocs(systemRef)
+    ]).then(([w, i, g, s]) => {
+        const works = w.size;
+        const indents = i.size;
+        const gates = g.size;
+        const systems = s.size;
 
-    const ctx = document.getElementById('myChart');
-    if(myChart) myChart.destroy();
+        const ctx = document.getElementById('myChart');
+        if(myChart) myChart.destroy();
 
-    myChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: ['Works', 'Indents', 'Gatepass', 'Systems', 'Documents'],
-            datasets: [{
-                data: [works, indents, gates, systems, docs],
-                backgroundColor: ['#00e5ff', '#00ff88', '#ff66cc', '#ffff00', '#ff9800']
-            }]
-        },
-        options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: 'white' }}}}
+        myChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Works', 'Indents', 'Gatepass', 'Systems'],
+                datasets: [{
+                    data: [works, indents, gates, systems],
+                    backgroundColor: ['#00e5ff', '#00ff88', '#ff66cc', '#ffff00']
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: 'white' }}}}
+        });
     });
 }
-
-// Global Search (Updated to include Documents)
-document.getElementById("searchInput").addEventListener("keyup", function() {
-    const query = this.value.toLowerCase().trim();
-    const resultsDiv = document.getElementById("searchResults");
-    const tbody = document.getElementById("searchTable");
-
-    if(query.length < 2) {
-        resultsDiv.style.display = "none";
-        return;
-    }
-
-    let html = `<tr><th>Type</th><th>Item</th><th>Details</th><th>Status</th></tr>`;
-    let found = false;
-
-    for(let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if(key.includes("NSSH") || key === "nssh_documents") {
-            try {
-                const data = JSON.parse(localStorage.getItem(key));
-                if(Array.isArray(data)) {
-                    data.forEach(item => {
-                        const text = JSON.stringify(item).toLowerCase();
-                        if(text.includes(query)) {
-                            found = true;
-                            let type = "Document";
-                            if(key.includes("works")) type = "Work";
-                            else if(key.includes("indents")) type = "Indent";
-                            else if(key.includes("gatepass")) type = "Gatepass";
-                            else if(key.includes("system")) type = "System";
-
-                            html += `<tr>
-                                <td>${type}</td>
-                                <td>${item.problem || item.material || item.personName || item.equipmentName || item.name || "N/A"}</td>
-                                <td>${item.details || item.purpose || item.ip || item.type || ""}</td>
-                                <td>${item.status || "N/A"}</td>
-                            </tr>`;
-                        }
-                    });
-                }
-            } catch(e){}
-        }
-    }
-
-    tbody.innerHTML = found ? html : `<tr><td colspan="4" style="text-align:center;color:red;">No results found</td></tr>`;
-    resultsDiv.style.display = "block";
-});
 
 function openPage(page) {
     const urls = {
@@ -152,7 +100,6 @@ function openPage(page) {
     if(urls[page]) window.location.href = urls[page];
 }
 
-// Logout Function
 function logout() {
     if(confirm("Are you sure you want to logout?")) {
         localStorage.removeItem("loggedIn");
@@ -160,8 +107,8 @@ function logout() {
     }
 }
 
-// Auto Update Chart every 3 seconds
-setInterval(updateChart, 3000);
+// Real-time updates
+setInterval(updateChart, 5000);
 window.onload = updateChart;
 </script>
 </body>
