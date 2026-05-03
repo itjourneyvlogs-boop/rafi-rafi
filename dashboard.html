@@ -6,7 +6,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
     body { margin:0; font-family:Arial; background:linear-gradient(135deg,#0f1c3a,#1e3c72,#2a5298); color:white; }
-    header { text-align:center; padding:25px; font-size:30px; font-weight:bold; text-shadow:0 0 15px #00e5ff; }
+    header { text-align:center; padding:25px; font-size:30px; font-weight:bold; text-shadow:0 0 15px #00e5ff; position:relative; }
     .search-container { text-align:center; margin:20px auto; max-width:700px; }
     #searchInput { width:90%; padding:16px; font-size:18px; border-radius:50px; border:none; background:rgba(255,255,255,0.95); color:#333; }
     
@@ -18,11 +18,21 @@
     .card i { font-size:55px; margin-bottom:10px; }
     
     .search-results { display:none; margin:20px; background:white; color:black; padding:15px; border-radius:12px; }
+    
+    .logout-btn {
+        position:absolute; top:25px; right:30px;
+        background:#f44336; color:white; border:none; padding:10px 20px;
+        border-radius:8px; cursor:pointer; font-weight:bold;
+    }
     </style>
 </head>
 <body>
 
 <header>🚀 NSSH IT Work Management Dashboard</header>
+
+<button class="logout-btn" onclick="logout()">
+    <i class="fas fa-sign-out-alt"></i> Logout
+</button>
 
 <div class="search-container">
     <input type="text" id="searchInput" placeholder="🔍 Global Search (Equipment, Problem, Person, IP, Ticket...)">
@@ -39,6 +49,12 @@
     <div class="card" onclick="openPage('Gatepass')"><i class="fas fa-id-badge" style="color:#ff66cc"></i><h3>Gatepass</h3></div>
     <div class="card" onclick="openPage('System Data')"><i class="fas fa-desktop" style="color:#ffff00"></i><h3>System Data</h3></div>
     <div class="card" onclick="openPage('Pending Works')"><i class="fas fa-hourglass-half" style="color:#ff9966"></i><h3>Pending</h3></div>
+    
+    <!-- New My Documents Card -->
+    <div class="card" onclick="openPage('My Documents')">
+        <i class="fas fa-folder-open" style="color:#ff9800"></i>
+        <h3>My Documents</h3>
+    </div>
 </div>
 
 <!-- Global Search Results -->
@@ -52,12 +68,13 @@
 let myChart;
 function updateChart() {
     const blocks = ["NSSH"];
-    let works = 0, indents = 0, gates = 0, systems = 0;
+    let works = 0, indents = 0, gates = 0, systems = 0, docs = 0;
 
     works += (JSON.parse(localStorage.getItem("works_NSSH")) || []).length;
     indents += (JSON.parse(localStorage.getItem("indents_NSSH")) || []).length;
     gates += (JSON.parse(localStorage.getItem("gatepass_NSSH")) || []).length;
     systems += (JSON.parse(localStorage.getItem("system_NSSH")) || []).length;
+    docs += (JSON.parse(localStorage.getItem("nssh_documents")) || []).length;
 
     const ctx = document.getElementById('myChart');
     if(myChart) myChart.destroy();
@@ -65,17 +82,17 @@ function updateChart() {
     myChart = new Chart(ctx, {
         type: 'pie',
         data: {
-            labels: ['Works', 'Indents', 'Gatepass', 'Systems'],
+            labels: ['Works', 'Indents', 'Gatepass', 'Systems', 'Documents'],
             datasets: [{
-                data: [works, indents, gates, systems],
-                backgroundColor: ['#00e5ff', '#00ff88', '#ff66cc', '#ffff00']
+                data: [works, indents, gates, systems, docs],
+                backgroundColor: ['#00e5ff', '#00ff88', '#ff66cc', '#ffff00', '#ff9800']
             }]
         },
         options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: 'white' }}}}
     });
 }
 
-// Global Search
+// Global Search (Updated to include Documents)
 document.getElementById("searchInput").addEventListener("keyup", function() {
     const query = this.value.toLowerCase().trim();
     const resultsDiv = document.getElementById("searchResults");
@@ -89,10 +106,9 @@ document.getElementById("searchInput").addEventListener("keyup", function() {
     let html = `<tr><th>Type</th><th>Item</th><th>Details</th><th>Status</th></tr>`;
     let found = false;
 
-    // Search in all storage keys
     for(let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if(key.includes("NSSH")) {
+        if(key.includes("NSSH") || key === "nssh_documents") {
             try {
                 const data = JSON.parse(localStorage.getItem(key));
                 if(Array.isArray(data)) {
@@ -100,10 +116,16 @@ document.getElementById("searchInput").addEventListener("keyup", function() {
                         const text = JSON.stringify(item).toLowerCase();
                         if(text.includes(query)) {
                             found = true;
+                            let type = "Document";
+                            if(key.includes("works")) type = "Work";
+                            else if(key.includes("indents")) type = "Indent";
+                            else if(key.includes("gatepass")) type = "Gatepass";
+                            else if(key.includes("system")) type = "System";
+
                             html += `<tr>
-                                <td>${key.includes("works") ? "Work" : key.includes("indents") ? "Indent" : key.includes("gatepass") ? "Gatepass" : "System"}</td>
-                                <td>${item.problem || item.material || item.personName || item.equipmentName || "N/A"}</td>
-                                <td>${item.details || item.purpose || item.ip || ""}</td>
+                                <td>${type}</td>
+                                <td>${item.problem || item.material || item.personName || item.equipmentName || item.name || "N/A"}</td>
+                                <td>${item.details || item.purpose || item.ip || item.type || ""}</td>
                                 <td>${item.status || "N/A"}</td>
                             </tr>`;
                         }
@@ -124,9 +146,18 @@ function openPage(page) {
         "Indents": "indents.html",
         "Gatepass": "gatepass.html",
         "System Data": "system-data.html",
-        "Pending Works": "view.html"
+        "Pending Works": "view.html",
+        "My Documents": "my-documents.html"
     };
     if(urls[page]) window.location.href = urls[page];
+}
+
+// Logout Function
+function logout() {
+    if(confirm("Are you sure you want to logout?")) {
+        localStorage.removeItem("loggedIn");
+        window.location.href = "index.html";
+    }
 }
 
 // Auto Update Chart every 3 seconds
