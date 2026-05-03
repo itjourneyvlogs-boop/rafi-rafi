@@ -15,7 +15,7 @@
         background: url('bg.jpg') no-repeat center center/cover;
         position: relative;
     }
-    
+   
     body::before {
         content: "";
         position: absolute;
@@ -24,7 +24,6 @@
         background: rgba(0,0,0,0.65);
         z-index: -1;
     }
-
     .login-box {
         background: rgba(15, 23, 42, 0.85);
         backdrop-filter: blur(16px);
@@ -36,7 +35,6 @@
                     0 0 90px rgba(138, 43, 226, 0.5);
         border: 1px solid rgba(0, 229, 255, 0.3);
     }
-
     .lock-icon {
         font-size: 65px;
         color: #00e5ff;
@@ -44,16 +42,13 @@
         text-shadow: 0 0 30px #00e5ff;
         animation: pulse 2s infinite;
     }
-
-    h2 { 
-        color: #00e5ff; 
-        margin-bottom: 8px; 
-        font-size: 32px; 
+    h2 {
+        color: #00e5ff;
+        margin-bottom: 8px;
+        font-size: 32px;
         text-shadow: 0 0 20px #00e5ff;
     }
-
     .subtitle { color: #a5b4fc; margin-bottom: 30px; font-size: 18px; }
-
     input {
         width: 100%;
         padding: 16px 20px;
@@ -68,7 +63,6 @@
         border-color: #00e5ff;
         box-shadow: 0 0 20px rgba(0, 229, 255, 0.6);
     }
-
     button {
         width: 100%;
         padding: 16px;
@@ -86,7 +80,6 @@
         transform: scale(1.06);
         box-shadow: 0 0 40px rgba(123, 0, 255, 0.8);
     }
-
     @keyframes pulse {
         0%, 100% { transform: scale(1); }
         50% { transform: scale(1.12); }
@@ -94,24 +87,22 @@
     </style>
 </head>
 <body>
-
 <div class="login-box">
     <i class="fas fa-lock lock-icon"></i>
     <h2>🔐 Secure Login</h2>
     <p class="subtitle">NSSH IT Work Management System</p>
-
-    <input type="text" id="username" placeholder="Username" value="admin">
+    
+    <input type="text" id="username" placeholder="Username">
     <input type="password" id="password" placeholder="Password">
-
+    
     <button onclick="login()">LOGIN</button>
-    <small style="color:#94a3b8;">Default: admin / admin123</small>
 </div>
 
 <script>
 function login() {
     const user = document.getElementById("username").value.trim();
     const pass = document.getElementById("password").value.trim();
-    
+   
     if (user === "admin" && pass === "admin123") {
         localStorage.setItem("loggedIn", "true");
         window.location.href = "dashboard.html";
@@ -120,6 +111,7 @@ function login() {
     }
 }
 
+// Enter key support
 document.getElementById("password").addEventListener("keypress", (e) => {
     if (e.key === "Enter") login();
 });
