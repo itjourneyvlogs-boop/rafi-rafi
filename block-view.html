@@ -13,29 +13,24 @@
 </head>
 <body>
 
-<!-- Back to Dashboard -->
 <button onclick="goToDashboard()" style="position:absolute; top:20px; right:20px; padding:10px 20px; background:#00bcd4; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">
     <i class="fas fa-home"></i> Dashboard
 </button>
 
 <h2>NSSH - Work Data</h2>
-
 <table id="dataTable">
     <thead>
-        <tr>
-            <th>S.No</th><th>Date</th><th>Time</th><th>Problem</th><th>Status</th><th>Action</th>
-        </tr>
+        <tr><th>S.No</th><th>Date</th><th>Time</th><th>Problem</th><th>Status</th><th>Action</th></tr>
     </thead>
     <tbody></tbody>
 </table>
 
-<script>
-let allData = [];
+<script type="module">
+import { db, collection, getDocs, deleteDoc, doc, onSnapshot } from "./firebase.js";
 
-function loadData() {
-    allData = JSON.parse(localStorage.getItem("works_NSSH")) || [];
-    renderTable();
-}
+const worksRef = collection(db, "works_NSSH");
+
+let allData = [];
 
 function renderTable() {
     const tbody = document.querySelector("#dataTable tbody");
@@ -48,24 +43,29 @@ function renderTable() {
                 <td>${item.time}</td>
                 <td>${item.problem}</td>
                 <td>${item.status}</td>
-                <td><button onclick="deleteRow(${index})">Delete</button></td>
+                <td><button onclick="deleteRow('${item.id}')">Delete</button></td>
             </tr>`;
     });
 }
 
-function deleteRow(index) {
+// Real-time Listener
+onSnapshot(worksRef, (snapshot) => {
+    allData = [];
+    snapshot.forEach(doc => {
+        allData.push({ id: doc.id, ...doc.data() });
+    });
+    renderTable();
+});
+
+async function deleteRow(id) {
     if(confirm("Delete this record?")) {
-        allData.splice(index,1);
-        localStorage.setItem("works_NSSH", JSON.stringify(allData));
-        renderTable();
+        await deleteDoc(doc(db, "works_NSSH", id));
     }
 }
 
 function goToDashboard() {
     window.location.href = "dashboard.html";
 }
-
-window.onload = loadData;
 </script>
 </body>
 </html>
