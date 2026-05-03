@@ -24,17 +24,19 @@
         background: rgba(0,0,0,0.65);
         z-index: -1;
     }
+
     .login-box {
-        background: rgba(15, 23, 42, 0.85);
+        background: rgba(15, 23, 42, 0.88);
         backdrop-filter: blur(16px);
         padding: 50px 40px;
         border-radius: 25px;
-        width: 400px;
+        width: 420px;
         text-align: center;
         box-shadow: 0 0 50px rgba(0, 229, 255, 0.7),
                     0 0 90px rgba(138, 43, 226, 0.5);
         border: 1px solid rgba(0, 229, 255, 0.3);
     }
+
     .lock-icon {
         font-size: 65px;
         color: #00e5ff;
@@ -42,14 +44,11 @@
         text-shadow: 0 0 30px #00e5ff;
         animation: pulse 2s infinite;
     }
-    h2 {
-        color: #00e5ff;
-        margin-bottom: 8px;
-        font-size: 32px;
-        text-shadow: 0 0 20px #00e5ff;
-    }
-    .subtitle { color: #a5b4fc; margin-bottom: 30px; font-size: 18px; }
-    input {
+
+    h2 { color: #00e5ff; margin-bottom: 8px; font-size: 32px; text-shadow: 0 0 20px #00e5ff; }
+    .subtitle { color: #a5b4fc; margin-bottom: 25px; font-size: 18px; }
+
+    input, #captchaInput {
         width: 100%;
         padding: 16px 20px;
         background: rgba(255,255,255,0.1);
@@ -57,16 +56,37 @@
         border-radius: 12px;
         color: white;
         font-size: 17px;
-        margin: 12px 0;
+        margin: 10px 0;
     }
-    input:focus {
+    input:focus, #captchaInput:focus {
         border-color: #00e5ff;
         box-shadow: 0 0 20px rgba(0, 229, 255, 0.6);
     }
+
+    .captcha-container {
+        background: rgba(255,255,255,0.1);
+        padding: 12px;
+        border-radius: 12px;
+        margin: 15px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    #captchaCode {
+        font-size: 22px;
+        font-weight: bold;
+        letter-spacing: 4px;
+        color: #00ff88;
+        background: rgba(0,0,0,0.4);
+        padding: 8px 15px;
+        border-radius: 8px;
+    }
+
     button {
         width: 100%;
         padding: 16px;
-        margin: 25px 0 10px;
+        margin: 20px 0 10px;
         border: none;
         border-radius: 12px;
         font-size: 18px;
@@ -77,9 +97,10 @@
         cursor: pointer;
     }
     button:hover {
-        transform: scale(1.06);
+        transform: scale(1.05);
         box-shadow: 0 0 40px rgba(123, 0, 255, 0.8);
     }
+
     @keyframes pulse {
         0%, 100% { transform: scale(1); }
         50% { transform: scale(1.12); }
@@ -87,34 +108,78 @@
     </style>
 </head>
 <body>
+
 <div class="login-box">
     <i class="fas fa-lock lock-icon"></i>
     <h2>🔐 Secure Login</h2>
     <p class="subtitle">NSSH IT Work Management System</p>
-    
+
     <input type="text" id="username" placeholder="Username">
     <input type="password" id="password" placeholder="Password">
-    
+
+    <!-- CAPTCHA -->
+    <div class="captcha-container">
+        <span id="captchaCode"></span>
+        <input type="text" id="captchaInput" placeholder="Enter CAPTCHA" style="width:160px; margin:0;">
+        <button type="button" onclick="refreshCaptcha()" style="width:auto; padding:8px 12px; font-size:14px;">⟳</button>
+    </div>
+
     <button onclick="login()">LOGIN</button>
 </div>
 
 <script>
+// Generate Random Math CAPTCHA
+let captchaAnswer = 0;
+
+function generateCaptcha() {
+    const num1 = Math.floor(Math.random() * 10) + 1;
+    const num2 = Math.floor(Math.random() * 10) + 1;
+    captchaAnswer = num1 + num2;
+    document.getElementById("captchaCode").textContent = `${num1} + ${num2} = ?`;
+}
+
+function refreshCaptcha() {
+    generateCaptcha();
+    document.getElementById("captchaInput").value = "";
+}
+
 function login() {
     const user = document.getElementById("username").value.trim();
     const pass = document.getElementById("password").value.trim();
-   
+    const captchaInput = parseInt(document.getElementById("captchaInput").value.trim());
+
+    if (!user || !pass) {
+        alert("Please enter username and password!");
+        return;
+    }
+
+    if (captchaInput !== captchaAnswer) {
+        alert("❌ Wrong CAPTCHA! Please try again.");
+        refreshCaptcha();
+        return;
+    }
+
     if (user === "admin" && pass === "admin123") {
         localStorage.setItem("loggedIn", "true");
         window.location.href = "dashboard.html";
     } else {
         alert("Invalid credentials!");
+        refreshCaptcha();
     }
 }
 
-// Enter key support
-document.getElementById("password").addEventListener("keypress", (e) => {
-    if (e.key === "Enter") login();
-});
+// Initialize CAPTCHA on load
+window.onload = () => {
+    generateCaptcha();
+    
+    // Enter key support
+    document.getElementById("password").addEventListener("keypress", (e) => {
+        if (e.key === "Enter") login();
+    });
+    document.getElementById("captchaInput").addEventListener("keypress", (e) => {
+        if (e.key === "Enter") login();
+    });
+};
 </script>
 </body>
 </html>
