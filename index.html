@@ -28,9 +28,10 @@
     .login-box {
         background: rgba(15, 23, 42, 0.88);
         backdrop-filter: blur(16px);
-        padding: 50px 40px;
+        padding: 60px 40px;     /* ఇక్కడ height పెరిగింది */
         border-radius: 25px;
         width: 420px;
+        min-height: 520px;      /* Minimum height increased */
         text-align: center;
         box-shadow: 0 0 50px rgba(0, 229, 255, 0.7),
                     0 0 90px rgba(138, 43, 226, 0.5);
@@ -38,15 +39,21 @@
     }
 
     .lock-icon {
-        font-size: 65px;
+        font-size: 70px;
         color: #00e5ff;
-        margin-bottom: 15px;
+        margin-bottom: 20px;
         text-shadow: 0 0 30px #00e5ff;
         animation: pulse 2s infinite;
     }
 
-    h2 { color: #00e5ff; margin-bottom: 8px; font-size: 32px; text-shadow: 0 0 20px #00e5ff; }
-    .subtitle { color: #a5b4fc; margin-bottom: 25px; font-size: 18px; }
+    h2 { 
+        color: #00e5ff; 
+        margin-bottom: 10px; 
+        font-size: 32px; 
+        text-shadow: 0 0 20px #00e5ff;
+    }
+
+    .subtitle { color: #a5b4fc; margin-bottom: 30px; font-size: 18px; }
 
     input, #captchaInput {
         width: 100%;
@@ -56,7 +63,7 @@
         border-radius: 12px;
         color: white;
         font-size: 17px;
-        margin: 10px 0;
+        margin: 12px 0;
     }
     input:focus, #captchaInput:focus {
         border-color: #00e5ff;
@@ -86,7 +93,7 @@
     button {
         width: 100%;
         padding: 16px;
-        margin: 20px 0 10px;
+        margin: 25px 0 10px;
         border: none;
         border-radius: 12px;
         font-size: 18px;
@@ -128,7 +135,7 @@
 </div>
 
 <script>
-// Generate Random Math CAPTCHA
+// CAPTCHA Logic
 let captchaAnswer = 0;
 
 function generateCaptcha() {
@@ -168,17 +175,10 @@ function login() {
     }
 }
 
-// Initialize CAPTCHA on load
 window.onload = () => {
     generateCaptcha();
-    
-    // Enter key support
-    document.getElementById("password").addEventListener("keypress", (e) => {
-        if (e.key === "Enter") login();
-    });
-    document.getElementById("captchaInput").addEventListener("keypress", (e) => {
-        if (e.key === "Enter") login();
-    });
+    document.getElementById("password").addEventListener("keypress", (e) => { if (e.key === "Enter") login(); });
+    document.getElementById("captchaInput").addEventListener("keypress", (e) => { if (e.key === "Enter") login(); });
 };
 </script>
 </body>
