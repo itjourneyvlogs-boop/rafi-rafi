@@ -17,7 +17,6 @@
 </head>
 <body>
 
-<!-- Back to Dashboard -->
 <button onclick="goToDashboard()" style="position:absolute; top:20px; right:20px; padding:10px 20px; background:#00bcd4; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">
     <i class="fas fa-home"></i> Dashboard
 </button>
@@ -31,86 +30,69 @@
     <th>Block</th>
     <th>Item / Problem</th>
     <th>Status</th>
-    <th>Completed / Return Date</th>
     <th>Action</th>
 </tr>
 </thead>
 <tbody></tbody>
 </table>
 
-<script>
+<script type="module">
+import { db, collection, getDocs, updateDoc, doc, deleteDoc, onSnapshot } from "./firebase.js";
+
 let allPending = [];
 
 function loadAllPending() {
-    allPending = [];
-    const blocks = ["NSSH"];
-
-    blocks.forEach(block => {
-        const clean = block.replace(/\s+/g, "_");
-
-        // Works
-        let works = JSON.parse(localStorage.getItem("works_" + clean)) || [];
-        works.forEach((item, idx) => {
+    // This can be enhanced with multiple collections
+    const worksRef = collection(db, "works_NSSH");
+    onSnapshot(worksRef, (snapshot) => {
+        allPending = [];
+        snapshot.forEach(docSnap => {
+            const item = docSnap.data();
             if (item.status === "Pending" || item.status === "In Progress") {
-                allPending.push({type: "Work", block: block, item: item.problem, status: item.status, date: item.completedDate || "-", source: "works_" + clean, index: idx});
+                allPending.push({id: docSnap.id, type: "Work", ...item});
             }
         });
-
-        // Indents
-        let indents = JSON.parse(localStorage.getItem("indents_" + clean)) || [];
-        indents.forEach((item, idx) => {
-            if (item.status === "Pending") {
-                allPending.push({type: "Indent", block: block, item: item.material, status: item.status, date: item.receivedDate || "-", source: "indents_" + clean, index: idx});
-            }
-        });
-
-        // Gatepass
-        let gates = JSON.parse(localStorage.getItem("gatepass_" + clean)) || [];
-        gates.forEach((item, idx) => {
-            if (item.status === "Pending") {
-                allPending.push({type: "Gatepass", block: block, item: item.purpose, status: item.status, date: item.returnDateTime || "-", source: "gatepass_" + clean, index: idx});
-            }
-        });
+        renderTable();
     });
-
-    renderTable();
 }
 
 function renderTable() {
     const tbody = document.querySelector("#dataTable tbody");
     tbody.innerHTML = "";
-
-    allPending.forEach((p, i) => {
+    allPending.forEach((p) => {
         const row = document.createElement("tr");
         row.innerHTML = `
             <td>${p.type}</td>
             <td>${p.block}</td>
-            <td style="text-align:left;">${p.item}</td>
-            <td class="editable" onclick="editStatus(${i})"><strong>${p.status}</strong></td>
-            <td class="editable" onclick="editDate(${i})">${p.date || '-'}</td>
+            <td style="text-align:left;">${p.problem || p.material || p.purpose}</td>
+            <td class="editable">${p.status}</td>
             <td>
-                <button class="edit-btn" onclick="editStatus(${i})">Edit Status</button>
-                <button class="delete-btn" onclick="deleteItem(${i})">Delete</button>
+                <button class="edit-btn" onclick="editStatus('${p.id}')">Edit Status</button>
+                <button class="delete-btn" onclick="deleteItem('${p.id}')">Delete</button>
             </td>
         `;
         tbody.appendChild(row);
     });
 }
 
-// Edit Status, Edit Date, Delete functions (same as before)
-function editStatus(i) {
-    const p = allPending[i];
-    let newStatus = prompt(`Current Status: ${p.status}\nNew Status:`, p.status);
+async function editStatus(id) {
+    const newStatus = prompt("New Status:", "Completed");
     if (newStatus) {
-        let data = JSON.parse(localStorage.getItem(p.source)) || [];
-        if (data[p.index]) {
-            data[p.index].status = newStatus.trim();
-            localStorage.setItem(p.source, JSON.stringify(data));
-            alert("✅ Status Updated!");
-            loadAllPending();
-        }
+        await updateDoc(doc(db, "works_NSSH", id), { status: newStatus });
     }
 }
 
-function editDate(i) {
-    const p
+async function deleteItem(id) {
+    if(confirm("Delete?")) {
+        await deleteDoc(doc(db, "works_NSSH", id));
+    }
+}
+
+function goToDashboard() {
+    window.location.href = "dashboard.html";
+}
+
+window.onload = loadAllPending;
+</script>
+</body>
+</html>
