@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>System View - NSSH</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+    body { font-family:Arial; background:#f4f6f9; padding:20px; }
+    table { width:100%; border-collapse:collapse; background:white; }
+    th, td { border:1px solid #ccc; padding:10px; text-align:center; }
+    th { background:#00bcd4; color:white; }
+    </style>
+</head>
+<body>
+<h2>NSSH - System Inventory</h2>
+
+<table id="dataTable">
+    <thead>
+        <tr>
+            <th>Equipment</th>
+            <th>IP</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script>
+function loadSystems() {
+    const data = JSON.parse(localStorage.getItem("system_NSSH")) || [];
+    const tbody = document.querySelector("#dataTable tbody");
+    tbody.innerHTML = "";
+
+    data.forEach((item, index) => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${item.equipmentName}</td>
+                <td>${item.ip}</td>
+                <td>${item.status}</td>
+                <td><button onclick="deleteSystem(${index})">Delete</button></td>
+            </tr>`;
+    });
+}
+
+function deleteSystem(index) {
+    if(confirm("Delete?")) {
+        let data = JSON.parse(localStorage.getItem("system_NSSH")) || [];
+        data.splice(index,1);
+        localStorage.setItem("system_NSSH", JSON.stringify(data));
+        loadSystems();
+    }
+}
+
+window.onload = loadSystems;
+</script>
+</body>
+</html>

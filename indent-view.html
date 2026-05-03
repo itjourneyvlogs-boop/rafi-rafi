@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Indents View - NSSH</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+    body { font-family:Arial; background:#f4f6f9; padding:20px; }
+    table { width:100%; border-collapse:collapse; background:white; }
+    th, td { border:1px solid #ccc; padding:10px; text-align:center; }
+    th { background:#00bcd4; color:white; }
+    </style>
+</head>
+<body>
+<h2>NSSH - Indents</h2>
+
+<table id="dataTable">
+    <thead>
+        <tr>
+            <th>Indent No</th>
+            <th>Date</th>
+            <th>Material</th>
+            <th>Quantity</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script>
+function loadIndents() {
+    const data = JSON.parse(localStorage.getItem("indents_NSSH")) || [];
+    const tbody = document.querySelector("#dataTable tbody");
+    tbody.innerHTML = "";
+
+    data.forEach((item, index) => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${item.indentNo}</td>
+                <td>${item.date}</td>
+                <td>${item.material}</td>
+                <td>${item.quantity}</td>
+                <td>${item.status}</td>
+                <td><button onclick="deleteIndent(${index})">Delete</button></td>
+            </tr>`;
+    });
+}
+
+function deleteIndent(index) {
+    if(confirm("Delete?")) {
+        let data = JSON.parse(localStorage.getItem("indents_NSSH")) || [];
+        data.splice(index,1);
+        localStorage.setItem("indents_NSSH", JSON.stringify(data));
+        loadIndents();
+    }
+}
+
+window.onload = loadIndents;
+</script>
+</body>
+</html>

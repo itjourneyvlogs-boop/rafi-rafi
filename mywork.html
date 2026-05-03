@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Work - NSSH</title>
+    <style>
+    body { font-family:Arial; background:#f4f6f9; padding:20px; }
+    .form-box { max-width:800px; margin:auto; background:white; padding:30px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.15); }
+    input, select, textarea { width:100%; padding:12px; margin:10px 0; border-radius:6px; border:1px solid #ccc; }
+    button { background:#00bcd4; color:white; padding:14px; width:100%; border:none; border-radius:8px; font-size:18px; cursor:pointer; }
+    </style>
+</head>
+<body>
+<h2>📝 Daily Work Entry - NSSH</h2>
+
+<div class="form-box">
+<form id="workForm">
+    <label>S.No</label>
+    <input type="number" id="sno" required>
+
+    <label>Date</label>
+    <input type="date" id="date" required>
+
+    <label>Time</label>
+    <input type="time" id="time" required>
+
+    <label>Block Name</label>
+    <select id="block" required>
+        <option value="NSSH">NSSH</option>
+    </select>
+
+    <label>Department</label>
+    <input type="text" id="dept">
+
+    <label>Floor</label>
+    <input type="text" id="floor">
+
+    <label>Problem</label>
+    <textarea id="problem" rows="4"></textarea>
+
+    <label>Ticket No</label>
+    <input type="text" id="ticket">
+
+    <label>Status</label>
+    <select id="status">
+        <option value="Pending">Pending</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Completed">Completed</option>
+    </select>
+
+    <button type="submit">Save Work</button>
+</form>
+</div>
+
+<script>
+document.getElementById("workForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const formData = {
+        sno: document.getElementById("sno").value,
+        date: document.getElementById("date").value,
+        time: document.getElementById("time").value,
+        block: "NSSH",
+        dept: document.getElementById("dept").value,
+        floor: document.getElementById("floor").value,
+        problem: document.getElementById("problem").value,
+        ticket: document.getElementById("ticket").value,
+        status: document.getElementById("status").value
+    };
+
+    let works = JSON.parse(localStorage.getItem("works_NSSH")) || [];
+    works.push(formData);
+    localStorage.setItem("works_NSSH", JSON.stringify(works));
+
+    alert("✅ Work Saved Successfully!");
+    this.reset();
+});
+</script>
+</body>
+</html>

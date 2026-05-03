@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gatepass - NSSH</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+    body { font-family:Arial; background:linear-gradient(135deg,#1e3c72,#2a5298); color:white; padding:20px; }
+    .block-card { background:rgba(255,255,255,0.15); padding:25px; border-radius:15px; text-align:center; margin:20px auto; max-width:500px; }
+    .btn { padding:12px; margin:5px; border:none; border-radius:8px; width:48%; cursor:pointer; }
+    .enter-btn { background:#4CAF50; color:white; }
+    .view-btn { background:#2196F3; color:white; }
+    </style>
+</head>
+<body>
+<h2>🆔 Gatepass Management - NSSH</h2>
+
+<div class="block-card">
+    <i class="fas fa-id-card" style="font-size:50px;color:#ff66cc;"></i>
+    <h3>NSSH</h3>
+    <button class="btn enter-btn" onclick="enterGatepass()">📝 Enter Gatepass</button>
+    <button class="btn view-btn" onclick="viewGatepass()">👁 View Gatepass</button>
+</div>
+
+<script>
+function enterGatepass() { window.location.href = 'gatepass-form.html'; }
+function viewGatepass() { 
+    localStorage.setItem("currentBlock", "NSSH"); 
+    window.location.href = "gatepass-view.html"; 
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>New Indent - NSSH</title>
+    <style>
+    body { font-family:Arial; background:#f4f6f9; padding:20px; }
+    .form-box { max-width:900px; margin:auto; background:white; padding:30px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.15); }
+    input, select, textarea { width:100%; padding:12px; margin:10px 0; border:1px solid #ccc; border-radius:6px; }
+    button { background:#00bcd4; color:white; padding:14px; width:100%; border:none; border-radius:8px; font-size:18px; cursor:pointer; }
+    </style>
+</head>
+<body>
+<h2>📋 New Indent Entry - NSSH</h2>
+
+<div class="form-box">
+<form id="indentForm">
+    <label>Block</label>
+    <input type="text" id="block" value="NSSH" readonly>
+
+    <label>Indent Number</label>
+    <input type="text" id="indentNo" required>
+
+    <label>Date</label>
+    <input type="date" id="date" required>
+
+    <label>Material</label>
+    <input type="text" id="material" required>
+
+    <label>Quantity</label>
+    <input type="number" id="quantity" required>
+
+    <label>Status</label>
+    <select id="status">
+        <option value="Pending">Pending</option>
+        <option value="Approved">Approved</option>
+    </select>
+
+    <button type="submit">Save Indent</button>
+</form>
+</div>
+
+<script>
+document.getElementById("indentForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const data = {
+        indentNo: document.getElementById("indentNo").value,
+        date: document.getElementById("date").value,
+        material: document.getElementById("material").value,
+        quantity: document.getElementById("quantity").value,
+        status: document.getElementById("status").value,
+        block: "NSSH"
+    };
+
+    let indents = JSON.parse(localStorage.getItem("indents_NSSH")) || [];
+    indents.push(data);
+    localStorage.setItem("indents_NSSH", JSON.stringify(indents));
+
+    alert("✅ Indent Saved!");
+    this.reset();
+});
+</script>
+</body>
+</html>

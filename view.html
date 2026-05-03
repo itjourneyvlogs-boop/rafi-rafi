@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pending Works - NSSH</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+    body { font-family:Arial; background:#f4f6f9; padding:20px; }
+    table { width:100%; border-collapse:collapse; background:white; }
+    th, td { border:1px solid #ccc; padding:10px; text-align:center; }
+    th { background:#00bcd4; color:white; }
+    </style>
+</head>
+<body>
+<h2>⏳ Pending Works - NSSH</h2>
+
+<table id="dataTable">
+    <thead>
+        <tr>
+            <th>Type</th>
+            <th>Item</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script>
+function loadPending() {
+    const tbody = document.querySelector("#dataTable tbody");
+    tbody.innerHTML = "";
+
+    // Works
+    const works = JSON.parse(localStorage.getItem("works_NSSH")) || [];
+    works.forEach((item, i) => {
+        if(item.status === "Pending") {
+            tbody.innerHTML += `<tr><td>Work</td><td>${item.problem}</td><td>${item.status}</td><td><button onclick="alert('Marked Completed')">Complete</button></td></tr>`;
+        }
+    });
+}
+
+window.onload = loadPending;
+</script>
+</body>
+</html>

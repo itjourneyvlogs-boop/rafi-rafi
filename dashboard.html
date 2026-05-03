@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard - NSSH</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+    body { margin:0; font-family:Arial; background:linear-gradient(135deg,#1e3c72,#2a5298); color:white; }
+    header { text-align:center; padding:20px; font-size:24px; }
+    .container { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:20px; padding:20px; }
+    .card { background:rgba(255,255,255,0.15); padding:20px; border-radius:15px; text-align:center; cursor:pointer; }
+    </style>
+</head>
+<body>
+<header>🚀 NSSH IT Work Management</header>
+
+<div class="container">
+    <div class="card" onclick="location.href='mywork.html'">📝 My Work</div>
+    <div class="card" onclick="location.href='blocks.html'">🏢 Blocks</div>
+    <div class="card" onclick="location.href='indents.html'">📋 Indents</div>
+    <div class="card" onclick="location.href='gatepass.html'">🆔 Gatepass</div>
+    <div class="card" onclick="location.href='system-data.html'">🖥️ System Data</div>
+    <div class="card" onclick="location.href='view.html'">⏳ Pending Works</div>
+    <div class="card" onclick="location.href='my-documents.html'">📂 Documents</div>
+</div>
+
+<script>
+if(localStorage.getItem("loggedIn") !== "true") window.location.href = "index.html";
+</script>
+</body>
+</html>

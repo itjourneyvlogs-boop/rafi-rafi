@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gatepass View - NSSH</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+    body { font-family:Arial; background:#f4f6f9; padding:20px; }
+    table { width:100%; border-collapse:collapse; background:white; }
+    th, td { border:1px solid #ccc; padding:10px; text-align:center; }
+    th { background:#00bcd4; color:white; }
+    </style>
+</head>
+<body>
+<h2>NSSH - Gatepass Records</h2>
+
+<table id="dataTable">
+    <thead>
+        <tr>
+            <th>Gatepass No</th>
+            <th>Person</th>
+            <th>Purpose</th>
+            <th>Destination</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script>
+function loadGatepasses() {
+    const data = JSON.parse(localStorage.getItem("gatepass_NSSH")) || [];
+    const tbody = document.querySelector("#dataTable tbody");
+    tbody.innerHTML = "";
+
+    data.forEach((item, index) => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${item.gatepassNo}</td>
+                <td>${item.personName}</td>
+                <td>${item.purpose}</td>
+                <td>${item.destination}</td>
+                <td>${item.status}</td>
+                <td><button onclick="deleteGate(${index})">Delete</button></td>
+            </tr>`;
+    });
+}
+
+function deleteGate(index) {
+    if(confirm("Delete?")) {
+        let data = JSON.parse(localStorage.getItem("gatepass_NSSH")) || [];
+        data.splice(index,1);
+        localStorage.setItem("gatepass_NSSH", JSON.stringify(data));
+        loadGatepasses();
+    }
+}
+
+window.onload = loadGatepasses;
+</script>
+</body>
+</html>

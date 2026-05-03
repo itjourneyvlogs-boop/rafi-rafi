@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Indents - NSSH</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+    body { font-family:Arial; background:linear-gradient(135deg,#1e3c72,#2a5298); color:white; padding:20px; }
+    .blocks-container { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px; }
+    .block-card { background:rgba(255,255,255,0.15); padding:25px; border-radius:15px; text-align:center; }
+    .btn { padding:12px; margin:5px; border:none; border-radius:8px; width:48%; cursor:pointer; }
+    .enter-btn { background:#4CAF50; color:white; }
+    .view-btn { background:#2196F3; color:white; }
+    </style>
+</head>
+<body>
+<h2>📋 Indents - NSSH</h2>
+
+<div class="blocks-container">
+    <div class="block-card">
+        <i class="fas fa-file-invoice" style="font-size:48px;color:#ffcc00;"></i>
+        <h3>NSSH</h3>
+        <button class="btn enter-btn" onclick="enterIndent()">📝 Enter Indent</button>
+        <button class="btn view-btn" onclick="viewIndents()">👁 View Indents</button>
+    </div>
+</div>
+
+<script>
+function enterIndent() { window.location.href = 'indent-form.html'; }
+function viewIndents() { 
+    localStorage.setItem("currentBlock", "NSSH"); 
+    window.location.href = "indent-view.html"; 
+}
+</script>
+</body>
+</html>

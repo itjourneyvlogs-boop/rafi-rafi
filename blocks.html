@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Blocks - NSSH</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+    body { font-family:Arial; background:linear-gradient(135deg,#1e3c72,#2a5298); color:white; padding:20px; }
+    .blocks-container { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px; }
+    .block-card { background:rgba(255,255,255,0.15); padding:25px; border-radius:15px; text-align:center; }
+    .btn { padding:12px; margin:5px; border:none; border-radius:8px; width:48%; cursor:pointer; }
+    .enter-btn { background:#4CAF50; color:white; }
+    .view-btn { background:#2196F3; color:white; }
+    </style>
+</head>
+<body>
+<h2>🏢 NSSH - All Blocks</h2>
+<div class="blocks-container" id="blocksContainer"></div>
+
+<script>
+const blocks = ["NSSH"];
+
+function renderBlocks() {
+    const container = document.getElementById("blocksContainer");
+    container.innerHTML = "";
+    blocks.forEach(block => {
+        const card = document.createElement("div");
+        card.className = "block-card";
+        card.innerHTML = `
+            <i class="fas fa-building" style="font-size:48px;color:#00e5ff;"></i>
+            <h3>${block}</h3>
+            <button class="btn enter-btn" onclick="enterData('${block}')">📝 Enter Data</button>
+            <button class="btn view-btn" onclick="viewData('${block}')">👁 View Data</button>
+        `;
+        container.appendChild(card);
+    });
+}
+
+function enterData(block) { window.location.href = `mywork.html?block=${block}`; }
+function viewData(block) { 
+    localStorage.setItem("currentBlock", block); 
+    window.location.href = "block-view.html"; 
+}
+
+renderBlocks();
+</script>
+</body>
+</html>
