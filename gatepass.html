@@ -1,41 +1,73 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Gatepass - NSSH</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <title>Gatepass Entry - NSSH</title>
     <style>
-    body { font-family:Arial; background:linear-gradient(135deg,#1e3c72,#2a5298); color:white; padding:20px; position:relative; }
-    .block-card { background:rgba(255,255,255,0.15); padding:25px; border-radius:15px; text-align:center; margin:20px auto; max-width:500px; }
-    .btn { padding:12px; margin:5px; border:none; border-radius:8px; width:48%; cursor:pointer; }
-    .enter-btn { background:#4CAF50; color:white; }
-    .view-btn { background:#2196F3; color:white; }
+    body { font-family:Arial; background:#f4f6f9; padding:20px; position:relative; }
+    .form-box { max-width:800px; margin:auto; background:white; padding:30px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.15); }
+    input, select, textarea { width:100%; padding:12px; margin:10px 0; border:1px solid #ccc; border-radius:6px; }
+    button { background:#00bcd4; color:white; padding:14px; width:100%; border:none; border-radius:8px; font-size:18px; cursor:pointer; }
     </style>
 </head>
 <body>
 
-<!-- Back to Dashboard -->
 <button onclick="goToDashboard()" style="position:absolute; top:20px; right:20px; padding:10px 20px; background:#00bcd4; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">
     <i class="fas fa-home"></i> Dashboard
 </button>
 
-<h2>🆔 Gatepass Management - NSSH</h2>
+<h2>🆔 New Gatepass - NSSH</h2>
 
-<div class="block-card">
-    <i class="fas fa-id-card" style="font-size:50px;color:#ff66cc;"></i>
-    <h3>NSSH</h3>
-    <button class="btn enter-btn" onclick="enterGatepass()">📝 Enter Gatepass</button>
-    <button class="btn view-btn" onclick="viewGatepass()">👁 View Gatepass</button>
+<div class="form-box">
+<form id="gatepassForm">
+    <label>Block</label>
+    <input type="text" value="NSSH" readonly>
+
+    <label>Gatepass No</label>
+    <input type="text" id="gatepassNo" required>
+
+    <label>Person Name</label>
+    <input type="text" id="personName" required>
+
+    <label>Purpose</label>
+    <textarea id="purpose" rows="3"></textarea>
+
+    <label>Destination</label>
+    <input type="text" id="destination" required>
+
+    <label>Status</label>
+    <select id="status">
+        <option value="Pending">Pending</option>
+        <option value="Approved">Approved</option>
+    </select>
+
+    <button type="submit">Save Gatepass</button>
+</form>
 </div>
 
-<script>
-function enterGatepass() { 
-    window.location.href = 'gatepass-form.html'; 
-}
+<script type="module">
+import { db, collection, addDoc } from "./firebase.js";
 
-function viewGatepass() { 
-    localStorage.setItem("currentBlock", "NSSH"); 
-    window.location.href = "gatepass-view.html"; 
-}
+document.getElementById("gatepassForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const data = {
+        gatepassNo: document.getElementById("gatepassNo").value,
+        personName: document.getElementById("personName").value,
+        purpose: document.getElementById("purpose").value,
+        destination: document.getElementById("destination").value,
+        status: document.getElementById("status").value,
+        block: "NSSH",
+        timestamp: new Date().toISOString()
+    };
+
+    try {
+        await addDoc(collection(db, "gatepass_NSSH"), data);
+        alert("✅ Gatepass Saved!");
+        this.reset();
+    } catch (error) {
+        alert("Error: " + error.message);
+    }
+});
 
 function goToDashboard() {
     window.location.href = "dashboard.html";
