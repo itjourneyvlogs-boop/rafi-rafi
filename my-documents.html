@@ -4,190 +4,74 @@
     <title>My Documents - NSSH</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-    body { font-family:Arial; background:#f4f6f9; padding:20px; position:relative; }
-    .header { background:linear-gradient(135deg,#1e3c72,#2a5298); color:white; padding:20px; text-align:center; border-radius:10px; }
-    .tabs { text-align:center; margin:20px 0; }
-    .tab-btn { padding:12px 25px; margin:5px; border:none; border-radius:8px; cursor:pointer; font-size:16px; }
-    .active { background:#00bcd4; color:white; }
-    .upload-area { border:2px dashed #00bcd4; padding:40px; text-align:center; border-radius:12px; background:white; margin:20px auto; max-width:700px; }
-    .document-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:20px; margin-top:30px; }
-    .doc-card { 
-        background:white; padding:15px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1); 
-        text-align:center; cursor:pointer; transition:0.3s;
-    }
-    .doc-card:hover { transform:scale(1.05); box-shadow:0 8px 20px rgba(0,0,0,0.15); }
-    .doc-icon { font-size:48px; margin:10px 0; }
-    .delete-btn { background:#f44336; color:white; border:none; padding:6px 12px; border-radius:6px; margin-top:8px; cursor:pointer; }
-    .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; }
-    .modal-content { max-width:800px; margin:50px auto; background:white; padding:20px; border-radius:12px; color:#333; }
+    /* Previous styles same */
+    body { font-family:Arial; background:#f4f6f9; padding:20px; }
+    .upload-area { border:2px dashed #00bcd4; padding:40px; text-align:center; border-radius:12px; background:white; }
+    .document-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:20px; }
+    .doc-card { background:white; padding:15px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1); text-align:center; }
     </style>
 </head>
 <body>
 
-<!-- Back to Dashboard Button -->
-<button onclick="goToDashboard()" style="position:absolute; top:20px; right:20px; padding:10px 20px; background:#00bcd4; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold; z-index:100;">
-    <i class="fas fa-home"></i> Dashboard
-</button>
+<button onclick="goToDashboard()" style="position:absolute; top:20px; right:20px; background:#00bcd4; color:white; border:none; padding:10px 20px; border-radius:8px;">Dashboard</button>
 
-<div class="header">
-    <h2>📂 My Documents - NSSH</h2>
+<h2>📂 My Documents - NSSH (Firebase Storage)</h2>
+
+<div class="upload-area">
+    <input type="file" id="fileInput" multiple>
+    <button onclick="uploadFiles()">Upload to Firebase</button>
 </div>
 
-<div class="tabs">
-    <button class="tab-btn active" onclick="showTab(0)">All Documents</button>
-    <button class="tab-btn" onclick="showTab(1)">Upload File</button>
-</div>
+<div class="document-grid" id="documentsContainer"></div>
 
-<!-- All Documents -->
-<div id="tab0" class="tab-content">
-    <div class="document-grid" id="documentsContainer"></div>
-</div>
+<script type="module">
+import { db } from "./firebase.js";
+import { getStorage, ref, uploadBytes, getDownloadURL, listAll, deleteObject } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
 
-<!-- Upload Tab -->
-<div id="tab1" class="tab-content" style="display:none;">
-    <div class="upload-area">
-        <h3>📤 Upload New Files</h3>
-        <input type="file" id="fileInput" multiple style="margin:20px 0;">
-        <button onclick="uploadFiles()" style="background:#00bcd4; color:white; padding:12px 30px; border:none; border-radius:8px; font-size:16px;">Upload Files</button>
-    </div>
-</div>
+const storage = getStorage();
 
-<!-- Preview Modal -->
-<div id="previewModal" class="modal">
-    <div class="modal-content">
-        <span onclick="closeModal()" style="float:right; font-size:28px; cursor:pointer;">&times;</span>
-        <h3 id="modalFileName"></h3>
-        <div id="modalContent"></div>
-    </div>
-</div>
-
-<script>
-// Tab Switching
-function showTab(n) {
-    document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
-    document.getElementById('tab'+n).style.display = 'block';
-    
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('.tab-btn')[n].classList.add('active');
-    
-    if(n === 0) loadDocuments();
-}
-
-// Load Documents
-function loadDocuments() {
-    const container = document.getElementById("documentsContainer");
-    const docs = JSON.parse(localStorage.getItem("nssh_documents")) || [];
-    container.innerHTML = "";
-
-    if(docs.length === 0) {
-        container.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:#666;">ఇంకా డాక్యుమెంట్స్ లేవు. ఫైల్స్ అప్‌లోడ్ చేయండి!</p>`;
-        return;
-    }
-
-    docs.forEach((doc, index) => {
-        const card = document.createElement("div");
-        card.className = "doc-card";
-        
-        let icon = "📄";
-        if(doc.type.includes("pdf")) icon = "📕";
-        else if(doc.type.includes("image")) icon = "🖼️";
-        else if(doc.type.includes("word") || doc.type.includes("doc")) icon = "📘";
-        else if(doc.type.includes("excel") || doc.type.includes("sheet")) icon = "📗";
-
-        card.innerHTML = `
-            <div class="doc-icon">${icon}</div>
-            <h4>${doc.name}</h4>
-            <small>${(doc.size/1024).toFixed(1)} KB • ${doc.date}</small>
-            <br>
-            <button class="delete-btn" onclick="event.stopImmediatePropagation(); deleteDocument(${index})">🗑 Delete</button>
-        `;
-        
-        card.onclick = () => previewDocument(doc);
-        container.appendChild(card);
-    });
-}
-
-// Upload Files
 async function uploadFiles() {
     const files = document.getElementById("fileInput").files;
-    if(files.length === 0) return alert("ఫైల్ సెలెక్ట్ చేయండి!");
-
-    let docs = JSON.parse(localStorage.getItem("nssh_documents")) || [];
-
-    for(let file of files) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            docs.push({
-                name: file.name,
-                type: file.type,
-                size: file.size,
-                date: new Date().toLocaleDateString('en-IN'),
-                data: e.target.result
-            });
-            localStorage.setItem("nssh_documents", JSON.stringify(docs));
-            loadDocuments();
-        };
-        reader.readAsDataURL(file);
+    for (let file of files) {
+        const storageRef = ref(storage, 'documents/' + file.name);
+        await uploadBytes(storageRef, file);
+        const url = await getDownloadURL(storageRef);
+        console.log("Uploaded:", url);
     }
-
-    alert("✅ ఫైల్స్ అప్‌లోడ్ అయ్యాయి!");
-    document.getElementById("fileInput").value = "";
-    showTab(0);
+    alert("✅ Files Uploaded to Firebase Storage!");
+    loadDocuments();
 }
 
-// Preview Document
-function previewDocument(doc) {
-    const modal = document.getElementById("previewModal");
-    const modalName = document.getElementById("modalFileName");
-    const modalContent = document.getElementById("modalContent");
+async function loadDocuments() {
+    const listRef = ref(storage, 'documents/');
+    const res = await listAll(listRef);
+    const container = document.getElementById("documentsContainer");
+    container.innerHTML = "";
 
-    modalName.textContent = doc.name;
-
-    if(doc.type.includes("image")) {
-        modalContent.innerHTML = `<img src="${doc.data}" style="max-width:100%; border-radius:8px;">`;
-    } else if(doc.type.includes("pdf")) {
-        modalContent.innerHTML = `<iframe src="${doc.data}" width="100%" height="500px" style="border:none;"></iframe>`;
-    } else {
-        modalContent.innerHTML = `
-            <p><strong>ఫైల్ టైప్:</strong> ${doc.type || "Unknown"}</p>
-            <p><strong>సైజు:</strong> ${(doc.size/1024).toFixed(1)} KB</p>
-            <button onclick="downloadFile('${doc.name}', '${doc.data}')" style="padding:10px 20px; background:#00bcd4; color:white; border:none; border-radius:6px;">
-                📥 Download
-            </button>
+    for (let itemRef of res.items) {
+        const url = await getDownloadURL(itemRef);
+        const card = document.createElement("div");
+        card.className = "doc-card";
+        card.innerHTML = `
+            <h4>${itemRef.name}</h4>
+            <a href="${url}" target="_blank">View</a>
+            <button onclick="deleteFile('${itemRef.name}')">Delete</button>
         `;
+        container.appendChild(card);
     }
-    modal.style.display = "block";
 }
 
-function closeModal() {
-    document.getElementById("previewModal").style.display = "none";
-}
-
-function downloadFile(name, data) {
-    const a = document.createElement("a");
-    a.href = data;
-    a.download = name;
-    a.click();
-}
-
-function deleteDocument(index) {
-    if(confirm("ఈ ఫైల్ డిలీట్ చేయాలా?")) {
-        let docs = JSON.parse(localStorage.getItem("nssh_documents")) || [];
-        docs.splice(index, 1);
-        localStorage.setItem("nssh_documents", JSON.stringify(docs));
+async function deleteFile(name) {
+    if(confirm("Delete?")) {
+        const desertRef = ref(storage, 'documents/' + name);
+        await deleteObject(desertRef);
         loadDocuments();
     }
 }
 
-function goToDashboard() {
-    window.location.href = "dashboard.html";
-}
+function goToDashboard() { window.location.href = "dashboard.html"; }
 
-// Initialize
-window.onload = () => {
-    showTab(0);
-    loadDocuments();
-};
+window.onload = loadDocuments;
 </script>
 </body>
 </html>
