@@ -1,71 +1,150 @@
 <!DOCTYPE html>
-<html>
+<html lang="te">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Block View - NSSH</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-    body { font-family:Arial; background:#f4f6f9; padding:20px; position:relative; }
-    table { width:100%; border-collapse:collapse; background:white; }
-    th, td { border:1px solid #ccc; padding:10px; text-align:center; }
-    th { background:#00bcd4; color:white; }
-    button { padding:8px 15px; margin:5px; border:none; border-radius:5px; cursor:pointer; }
+        body { 
+            font-family: Arial, sans-serif; 
+            background: #f4f6f9; 
+            padding: 20px; 
+            margin: 0;
+        }
+        h2 { color: #00bcd4; }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            background: white; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        th, td { 
+            border: 1px solid #ccc; 
+            padding: 12px; 
+            text-align: center;
+        }
+        th { 
+            background: #00bcd4; 
+            color: white; 
+        }
+        button { 
+            padding: 8px 15px; 
+            margin: 5px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer;
+        }
+        .delete-btn {
+            background: #f44336;
+            color: white;
+        }
+        .dashboard-btn {
+            position: absolute; 
+            top: 20px; 
+            right: 20px; 
+            padding: 10px 20px; 
+            background: #00bcd4; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
-<button onclick="goToDashboard()" style="position:absolute; top:20px; right:20px; padding:10px 20px; background:#00bcd4; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">
+<button onclick="goToDashboard()" class="dashboard-btn">
     <i class="fas fa-home"></i> Dashboard
 </button>
 
 <h2>NSSH - Work Data</h2>
+
 <table id="dataTable">
     <thead>
-        <tr><th>S.No</th><th>Date</th><th>Time</th><th>Problem</th><th>Status</th><th>Action</th></tr>
+        <tr>
+            <th>S.No</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Problem</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
     </thead>
     <tbody></tbody>
 </table>
 
 <script type="module">
-import { db, collection, getDocs, deleteDoc, doc, onSnapshot } from "./firebase.js";
+    // ==================== Firebase Configuration ====================
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getFirestore, collection, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
-const worksRef = collection(db, "works_NSSH");
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY_HERE",
+        authDomain: "nssh-it-system.firebaseapp.com",
+        projectId: "nssh-it-system",
+        storageBucket: "nssh-it-system.firebasestorage.app",
+        messagingSenderId: "YOUR_SENDER_ID",
+        appId: "YOUR_APP_ID"
+    };
 
-let allData = [];
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-function renderTable() {
-    const tbody = document.querySelector("#dataTable tbody");
-    tbody.innerHTML = "";
-    allData.forEach((item, index) => {
-        tbody.innerHTML += `
-            <tr>
-                <td>${item.sno}</td>
-                <td>${item.date}</td>
-                <td>${item.time}</td>
-                <td>${item.problem}</td>
-                <td>${item.status}</td>
-                <td><button onclick="deleteRow('${item.id}')">Delete</button></td>
-            </tr>`;
-    });
-}
+    const worksRef = collection(db, "works_NSSH");
+    let allData = [];
 
-// Real-time Listener
-onSnapshot(worksRef, (snapshot) => {
-    allData = [];
-    snapshot.forEach(doc => {
-        allData.push({ id: doc.id, ...doc.data() });
-    });
-    renderTable();
-});
+    function renderTable() {
+        const tbody = document.querySelector("#dataTable tbody");
+        tbody.innerHTML = "";
 
-async function deleteRow(id) {
-    if(confirm("Delete this record?")) {
-        await deleteDoc(doc(db, "works_NSSH", id));
+        allData.forEach((item, index) => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${item.sno || index + 1}</td>
+                    <td>${item.date || ''}</td>
+                    <td>${item.time || ''}</td>
+                    <td style="text-align:left;">${item.problem || ''}</td>
+                    <td>${item.status || ''}</td>
+                    <td>
+                        <button class="delete-btn" onclick="deleteRow('${item.id}')">
+                            Delete
+                        </button>
+                    </td>
+                </tr>`;
+        });
     }
-}
 
-function goToDashboard() {
-    window.location.href = "dashboard.html";
-}
+    // Real-time Data Listener
+    onSnapshot(worksRef, (snapshot) => {
+        allData = [];
+        snapshot.forEach((docItem) => {
+            allData.push({ id: docItem.id, ...docItem.data() });
+        });
+        renderTable();
+    }, (error) => {
+        console.error("Error fetching data:", error);
+        alert("డేటా లోడ్ చేయడంలో సమస్య వచ్చింది!");
+    });
+
+    // Delete Function
+    window.deleteRow = async function(id) {
+        if (confirm("ఈ రికార్డ్‌ని డిలీట్ చేయాలనుకుంటున్నారా?")) {
+            try {
+                await deleteDoc(doc(db, "works_NSSH", id));
+                alert("రికార్డ్ డిలీట్ చేయబడింది");
+            } catch (error) {
+                console.error("Delete error:", error);
+                alert("డిలీట్ చేయడంలో సమస్య వచ్చింది");
+            }
+        }
+    };
+
+    function goToDashboard() {
+        window.location.href = "dashboard.html";
+    }
 </script>
+
 </body>
 </html>
