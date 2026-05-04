@@ -68,7 +68,7 @@
 </head>
 <body>
 
-<button onclick="goToDashboard()" class="dashboard-btn">
+<button id="dashboardBtn" class="dashboard-btn">
     <i class="fas fa-home"></i> Dashboard
 </button>
 
@@ -138,7 +138,7 @@
             sno: parseInt(document.getElementById("sno").value),
             date: document.getElementById("date").value,
             time: document.getElementById("time").value,
-            block: "NSSH",
+            block: document.getElementById("block").value,
             dept: document.getElementById("dept").value,
             floor: document.getElementById("floor").value,
             problem: document.getElementById("problem").value,
@@ -157,12 +157,10 @@
         }
     });
 
-    // ==================== Dashboard Button ====================
-    function goToDashboard() {
-        window.location.href = "dashboard.html";   // ఇది మార్చాలంటే క్రింది లైన్లు ట్రై చేయండి
-        // window.location.href = "index.html";
-        // window.location.href = "./index.html";
-    }
+    // Dashboard Button Fix (Module Script లో పని చేయడానికి)
+    document.getElementById("dashboardBtn").addEventListener("click", () => {
+        window.location.href = "dashboard.html";   // ఇక్కడ మార్చాలంటే మార్చండి
+    });
 </script>
 
 </body>
