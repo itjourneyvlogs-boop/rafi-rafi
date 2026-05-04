@@ -1,98 +1,171 @@
 <!DOCTYPE html>
-<html>
+<html lang="te">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pending Works - NSSH</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-    body { font-family:Arial; background:#f4f6f9; padding:20px; position:relative; }
-    table { width:100%; border-collapse:collapse; background:white; box-shadow:0 2px 10px rgba(0,0,0,0.1); }
-    th, td { border:1px solid #ccc; padding:12px; text-align:center; }
-    th { background:#00bcd4; color:white; }
-    .editable { cursor:pointer; background:#f0f8ff; }
-    .editable:hover { background:#e3f2fd; }
-    button { padding:8px 12px; margin:3px; border:none; border-radius:5px; cursor:pointer; }
-    .edit-btn { background:#4CAF50; color:white; }
-    .delete-btn { background:#f44336; color:white; }
+        body { 
+            font-family: Arial, sans-serif; 
+            background: #f4f6f9; 
+            padding: 20px; 
+            margin: 0;
+        }
+        h2 { color: #00bcd4; }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            background: white; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+        }
+        th, td { 
+            border: 1px solid #ccc; 
+            padding: 12px; 
+            text-align: center;
+        }
+        th { 
+            background: #00bcd4; 
+            color: white; 
+        }
+        .editable { 
+            cursor: pointer; 
+            background: #f0f8ff; 
+        }
+        .editable:hover { 
+            background: #e3f2fd; 
+        }
+        button { 
+            padding: 8px 12px; 
+            margin: 3px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer;
+        }
+        .edit-btn { background: #4CAF50; color: white; }
+        .delete-btn { background: #f44336; color: white; }
+        .dashboard-btn {
+            position: absolute; 
+            top: 20px; 
+            right: 20px; 
+            padding: 10px 20px; 
+            background: #00bcd4; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
-<button onclick="goToDashboard()" style="position:absolute; top:20px; right:20px; padding:10px 20px; background:#00bcd4; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">
+<button id="dashboardBtn" class="dashboard-btn">
     <i class="fas fa-home"></i> Dashboard
 </button>
 
 <h2>⏳ Pending Works - NSSH</h2>
 
 <table id="dataTable">
-<thead>
-<tr>
-    <th>Type</th>
-    <th>Block</th>
-    <th>Item / Problem</th>
-    <th>Status</th>
-    <th>Action</th>
-</tr>
-</thead>
-<tbody></tbody>
+    <thead>
+        <tr>
+            <th>Type</th>
+            <th>Block</th>
+            <th>Item / Problem</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
 </table>
 
 <script type="module">
-import { db, collection, getDocs, updateDoc, doc, deleteDoc, onSnapshot } from "./firebase.js";
+    // ==================== Firebase Configuration ====================
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getFirestore, collection, onSnapshot, updateDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
-let allPending = [];
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY_HERE",
+        authDomain: "nssh-it-system.firebaseapp.com",
+        projectId: "nssh-it-system",
+        storageBucket: "nssh-it-system.firebasestorage.app",
+        messagingSenderId: "YOUR_SENDER_ID",
+        appId: "YOUR_APP_ID"
+    };
 
-function loadAllPending() {
-    // This can be enhanced with multiple collections
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let allPending = [];
+
+    function renderTable() {
+        const tbody = document.querySelector("#dataTable tbody");
+        tbody.innerHTML = "";
+
+        allPending.forEach((p) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${p.type || "Work"}</td>
+                <td>${p.block || "NSSH"}</td>
+                <td style="text-align:left;">${p.problem || p.material || p.purpose || ""}</td>
+                <td class="editable">${p.status || ""}</td>
+                <td>
+                    <button class="edit-btn" onclick="editStatus('${p.id}')">Edit Status</button>
+                    <button class="delete-btn" onclick="deleteItem('${p.id}')">Delete</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    // Real-time Listener
     const worksRef = collection(db, "works_NSSH");
     onSnapshot(worksRef, (snapshot) => {
         allPending = [];
         snapshot.forEach(docSnap => {
             const item = docSnap.data();
             if (item.status === "Pending" || item.status === "In Progress") {
-                allPending.push({id: docSnap.id, type: "Work", ...item});
+                allPending.push({ id: docSnap.id, type: "Work", ...item });
             }
         });
         renderTable();
+    }, (error) => {
+        console.error("Error:", error);
+        alert("డేటా లోడ్ చేయడంలో సమస్య వచ్చింది!");
     });
-}
 
-function renderTable() {
-    const tbody = document.querySelector("#dataTable tbody");
-    tbody.innerHTML = "";
-    allPending.forEach((p) => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-            <td>${p.type}</td>
-            <td>${p.block}</td>
-            <td style="text-align:left;">${p.problem || p.material || p.purpose}</td>
-            <td class="editable">${p.status}</td>
-            <td>
-                <button class="edit-btn" onclick="editStatus('${p.id}')">Edit Status</button>
-                <button class="delete-btn" onclick="deleteItem('${p.id}')">Delete</button>
-            </td>
-        `;
-        tbody.appendChild(row);
+    // Edit Status
+    window.editStatus = async function(id) {
+        const newStatus = prompt("New Status ఎంటర్ చేయండి:", "Completed");
+        if (newStatus) {
+            try {
+                await updateDoc(doc(db, "works_NSSH", id), { status: newStatus });
+                alert("Status Updated!");
+            } catch (error) {
+                console.error(error);
+                alert("Update failed!");
+            }
+        }
+    };
+
+    // Delete Item
+    window.deleteItem = async function(id) {
+        if (confirm("ఈ రికార్డ్ డిలీట్ చేయాలనుకుంటున్నారా?")) {
+            try {
+                await deleteDoc(doc(db, "works_NSSH", id));
+                alert("Deleted Successfully!");
+            } catch (error) {
+                console.error(error);
+                alert("Delete failed!");
+            }
+        }
+    };
+
+    // Dashboard Button
+    document.getElementById("dashboardBtn").addEventListener("click", () => {
+        window.location.href = "dashboard.html";
     });
-}
-
-async function editStatus(id) {
-    const newStatus = prompt("New Status:", "Completed");
-    if (newStatus) {
-        await updateDoc(doc(db, "works_NSSH", id), { status: newStatus });
-    }
-}
-
-async function deleteItem(id) {
-    if(confirm("Delete?")) {
-        await deleteDoc(doc(db, "works_NSSH", id));
-    }
-}
-
-function goToDashboard() {
-    window.location.href = "dashboard.html";
-}
-
-window.onload = loadAllPending;
 </script>
+
 </body>
 </html>
